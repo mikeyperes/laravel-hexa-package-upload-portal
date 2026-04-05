@@ -1,0 +1,22 @@
+{
+    "name": "hexawebsystems/laravel-hexa-package-upload-portal",
+    "description": "Upload Portal — Multi-file upload with progress, temp storage, and gallery",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "hexa_package_upload_portal\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "hexa_package_upload_portal\\Providers\\UploadPortalServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable"
+}
