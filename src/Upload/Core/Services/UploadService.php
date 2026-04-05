@@ -66,25 +66,31 @@ class UploadService
      * @param int $contextId
      * @return Collection
      */
-    public function getFiles(string $context, int $contextId): Collection
+    public function getFiles(string $context, int $contextId, ?int $userId = null): Collection
     {
-        return UploadedFile::where('context', $context)
+        $query = UploadedFile::where('context', $context)
             ->where('context_id', $contextId)
-            ->where('status', '!=', 'deleted')
-            ->orderBy('created_at')
-            ->get();
+            ->where('status', '!=', 'deleted');
+
+        if ($userId !== null) {
+            $query->where('uploaded_by', $userId);
+        }
+
+        return $query->orderBy('created_at')->get();
     }
 
     /**
-     * Delete a file and its DB record.
+     * Delete a file and its DB record. Enforces ownership.
      *
      * @param int $fileId
+     * @param int|null $userId Owner check — null skips (admin)
      * @return bool
      */
-    public function delete(int $fileId): bool
+    public function delete(int $fileId, ?int $userId = null): bool
     {
         $file = UploadedFile::find($fileId);
         if (!$file) return false;
+        if ($userId !== null && (int) $file->uploaded_by !== $userId) return false;
 
         $this->storage->deleteFile($file->path);
         $file->update(['status' => 'deleted']);
@@ -107,11 +113,17 @@ class UploadService
      * @param int $contextId
      * @return int Number of files cleaned up
      */
-    public function cleanup(string $context, int $contextId): int
+    public function cleanup(string $context, int $contextId, ?int $userId = null): int
     {
-        $files = UploadedFile::where('context', $context)
+        $query = UploadedFile::where('context', $context)
             ->where('context_id', $contextId)
-            ->where('status', 'temp')
+            ->where('status', 'temp');
+
+        if ($userId !== null) {
+            $query->where('uploaded_by', $userId);
+        }
+
+        $files = $query
             ->get();
 
         $count = 0;

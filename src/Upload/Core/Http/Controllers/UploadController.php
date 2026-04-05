@@ -56,7 +56,7 @@ class UploadController extends Controller
                 'original_name' => $record->original_name,
                 'size' => $record->size,
                 'mime_type' => $record->mime_type,
-                'url' => asset('storage/' . $record->path),
+                'url' => \Illuminate\Support\Facades\Storage::disk($record->disk)->url($record->path),
                 'path' => $record->path,
             ];
         }
@@ -84,7 +84,8 @@ class UploadController extends Controller
 
         $files = $this->uploadService->getFiles(
             $request->input('context'),
-            (int) $request->input('context_id')
+            (int) $request->input('context_id'),
+            auth()->id()
         );
 
         return response()->json([
@@ -95,7 +96,7 @@ class UploadController extends Controller
                 'original_name' => $f->original_name,
                 'size' => $f->size,
                 'mime_type' => $f->mime_type,
-                'url' => asset('storage/' . $f->path),
+                'url' => \Illuminate\Support\Facades\Storage::disk($f->disk)->url($f->path),
                 'status' => $f->status,
                 'created_at' => $f->created_at->toIso8601String(),
             ]),
@@ -110,11 +111,11 @@ class UploadController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $deleted = $this->uploadService->delete($id);
+        $deleted = $this->uploadService->delete($id, auth()->id());
 
         return response()->json([
             'success' => $deleted,
-            'message' => $deleted ? 'File deleted.' : 'File not found.',
+            'message' => $deleted ? 'File deleted.' : 'File not found or access denied.',
         ]);
     }
 
@@ -133,7 +134,8 @@ class UploadController extends Controller
 
         $count = $this->uploadService->cleanup(
             $request->input('context'),
-            (int) $request->input('context_id')
+            (int) $request->input('context_id'),
+            auth()->id()
         );
 
         return response()->json([

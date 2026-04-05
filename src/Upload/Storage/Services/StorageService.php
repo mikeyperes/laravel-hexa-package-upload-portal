@@ -7,13 +7,31 @@ use Illuminate\Support\Facades\Storage;
 class StorageService
 {
     /**
+     * Get a setting value — checks DB Setting first, falls back to config.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    private function setting(string $key, mixed $default = null): mixed
+    {
+        if (class_exists(\hexa_core\Models\Setting::class)) {
+            $dbValue = \hexa_core\Models\Setting::getValue('upload_portal_' . $key);
+            if ($dbValue !== null && $dbValue !== '') {
+                return $dbValue;
+            }
+        }
+        return config('upload-portal.' . $key, $default);
+    }
+
+    /**
      * Get the upload directory path.
      *
      * @return string
      */
     public function getUploadDir(): string
     {
-        return config('upload-portal.upload_dir', 'uploads');
+        return (string) $this->setting('upload_dir', 'uploads');
     }
 
     /**
@@ -23,7 +41,7 @@ class StorageService
      */
     public function getTempDir(): string
     {
-        return config('upload-portal.temp_dir', 'uploads/temp');
+        return (string) $this->setting('temp_dir', 'uploads/temp');
     }
 
     /**
@@ -46,7 +64,11 @@ class StorageService
      */
     public function getAllowedTypes(): array
     {
-        return config('upload-portal.allowed_types', ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+        $val = $this->setting('allowed_types', ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+        if (is_string($val)) {
+            return array_map('trim', explode(',', $val));
+        }
+        return (array) $val;
     }
 
     /**
@@ -56,7 +78,7 @@ class StorageService
      */
     public function getMaxFileSize(): int
     {
-        return (int) config('upload-portal.max_file_size', 10240);
+        return (int) $this->setting('max_file_size', 10240);
     }
 
     /**
@@ -66,7 +88,7 @@ class StorageService
      */
     public function getMaxFilesPerUpload(): int
     {
-        return (int) config('upload-portal.max_files_per_upload', 20);
+        return (int) $this->setting('max_files_per_upload', 20);
     }
 
     /**

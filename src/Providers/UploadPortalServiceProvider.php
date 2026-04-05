@@ -31,8 +31,7 @@ class UploadPortalServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'upload-portal');
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
 
-        // Blade component
-        $this->loadViewComponentsAs('upload-portal', []);
+        // Component available via @include('upload-portal::components.upload-portal', [...])
 
         // Settings card on /settings page
         view()->composer('settings.index', function ($view) {
@@ -45,7 +44,7 @@ class UploadPortalServiceProvider extends ServiceProvider
             try {
                 app(\hexa_core\Services\DocumentationService::class)->register('upload-portal', 'Upload Portal', 'hexawebsystems/laravel-hexa-package-upload-portal', [
                     ['title' => 'Overview', 'content' => 'Multi-file upload with progress bars, temp storage, gallery viewing, and cleanup API.'],
-                    ['title' => 'Component', 'content' => '<code>&lt;x-upload-portal context="article" :context-id="$id" :multi="true" /&gt;</code>'],
+                    ['title' => 'Component', 'content' => '<code>@include(\'upload-portal::components.upload-portal\', [\'context\' => \'article\', \'contextId\' => $id, \'multi\' => true])</code>'],
                     ['title' => 'Public API', 'content' => '<code>UploadService::upload()</code>, <code>getFiles()</code>, <code>delete()</code>, <code>cleanup()</code>, <code>getTempPath()</code>'],
                 ]);
             } catch (\Throwable $e) {}
