@@ -31,6 +31,18 @@ class UploadPortalServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'upload-portal');
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
 
+        if (class_exists(\hexa_core\Services\PackageRegistryService::class)) {
+            app(\hexa_core\Services\PackageRegistryService::class)->registerPackage('upload-portal', 'hexawebsystems/laravel-hexa-package-upload-portal', [
+                'title' => 'Upload Portal',
+                'description' => 'Reusable upload component package for multi-file uploads, temp storage, and galleries.',
+                'docsSlug' => 'upload-portal',
+                'instructions' => [
+                    'Embed the upload component where file collection is needed.',
+                    'Use the package API for cleanup and file lifecycle operations.',
+                ],
+            ]);
+        }
+
         // Component available via @include('upload-portal::components.upload-portal', [...])
 
         // Settings card on /settings page
