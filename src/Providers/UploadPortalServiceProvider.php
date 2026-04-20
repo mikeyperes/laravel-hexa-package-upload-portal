@@ -33,6 +33,11 @@ class UploadPortalServiceProvider extends ServiceProvider
 
         if (class_exists(\hexa_core\Services\PackageRegistryService::class)) {
             $registry = app(\hexa_core\Services\PackageRegistryService::class);
+            // HWS-SIDEBAR-MENU-3L-BEGIN
+            $registry->registerDomainGroup('Integrations', 'M13 10V3L4 14h7v7l9-11h-7z', 40);
+            $registry->registerSectionGroup('Upload Portal', 'Integrations', '', 40);
+            // HWS-SIDEBAR-MENU-3L-END
+
             $registry->registerSidebarLink('upload-portal.settings', 'Settings', 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.11 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'Upload Portal', 'upload-portal', 65);
             if (method_exists($registry, 'registerPackage')) {
                 $registry->registerPackage('upload-portal', 'hexawebsystems/laravel-hexa-package-upload-portal', [
