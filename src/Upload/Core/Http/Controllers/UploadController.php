@@ -56,8 +56,9 @@ class UploadController extends Controller
                 'original_name' => $record->original_name,
                 'size' => $record->size,
                 'mime_type' => $record->mime_type,
-                'url' => \Illuminate\Support\Facades\Storage::disk($record->disk)->url($record->path),
+                'url' => url(\Illuminate\Support\Facades\Storage::disk($record->disk)->url($record->path)),
                 'path' => $record->path,
+                'disk' => $record->disk,
             ];
         }
 
@@ -96,7 +97,9 @@ class UploadController extends Controller
                 'original_name' => $f->original_name,
                 'size' => $f->size,
                 'mime_type' => $f->mime_type,
-                'url' => \Illuminate\Support\Facades\Storage::disk($f->disk)->url($f->path),
+                'url' => url(\Illuminate\Support\Facades\Storage::disk($f->disk)->url($f->path)),
+                'path' => $f->path,
+                'disk' => $f->disk,
                 'status' => $f->status,
                 'created_at' => $f->created_at->toIso8601String(),
             ]),

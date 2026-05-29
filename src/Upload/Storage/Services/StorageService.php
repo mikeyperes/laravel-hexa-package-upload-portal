@@ -45,6 +45,16 @@ class StorageService
     }
 
     /**
+     * Get the storage disk used for upload portal files.
+     *
+     * @return string
+     */
+    public function getDisk(): string
+    {
+        return (string) $this->setting('disk', 'public');
+    }
+
+    /**
      * Ensure the directory exists.
      *
      * @param string $dir
@@ -52,8 +62,9 @@ class StorageService
      */
     public function ensureDirectory(string $dir): void
     {
-        if (!Storage::exists($dir)) {
-            Storage::makeDirectory($dir);
+        $disk = $this->getDisk();
+        if (!Storage::disk($disk)->exists($dir)) {
+            Storage::disk($disk)->makeDirectory($dir);
         }
     }
 
@@ -97,8 +108,8 @@ class StorageService
      * @param string $path
      * @return bool
      */
-    public function deleteFile(string $path): bool
+    public function deleteFile(string $path, ?string $disk = null): bool
     {
-        return Storage::delete($path);
+        return Storage::disk($disk ?: $this->getDisk())->delete($path);
     }
 }

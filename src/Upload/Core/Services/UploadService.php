@@ -8,6 +8,7 @@ use Illuminate\Http\UploadedFile as LaravelUploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class UploadService
 {
@@ -28,17 +29,38 @@ class UploadService
     public function upload(LaravelUploadedFile $file, string $context, int $contextId, ?int $userId = null, bool $temp = true): UploadedFile
     {
         $dir = $temp ? $this->storage->getTempDir() : $this->storage->getUploadDir();
+        $disk = $this->storage->getDisk();
         $this->storage->ensureDirectory($dir);
 
         $ext = $file->getClientOriginalExtension() ?: 'jpg';
         $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '_' . Str::random(8) . '.' . $ext;
-        $path = $file->storeAs($dir, $filename);
+        $path = Storage::disk($disk)->putFileAs($dir, $file, $filename);
+        if (!is_string($path) || trim($path) === '' || $path === '0' || !Storage::disk($disk)->exists($path)) {
+            $path = trim($dir, '/') . '/' . $filename;
+            $source = $file->getRealPath();
+            if (!$source || !is_readable($source)) {
+                throw new RuntimeException('Upload failed: uploaded temp file is not readable.');
+            }
+
+            $stream = fopen($source, 'rb');
+            try {
+                $stored = $stream ? Storage::disk($disk)->put($path, $stream) : false;
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            if (!$stored || !Storage::disk($disk)->exists($path)) {
+                throw new RuntimeException('Upload failed: file was not written to disk ' . $disk . ' at ' . $path . '.');
+            }
+        }
 
         $record = UploadedFile::create([
             'filename' => $filename,
             'original_name' => $file->getClientOriginalName(),
             'path' => $path,
-            'disk' => config('filesystems.default', 'local'),
+            'disk' => $disk,
             'size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
             'context' => $context,
@@ -70,7 +92,10 @@ class UploadService
     {
         $query = UploadedFile::where('context', $context)
             ->where('context_id', $contextId)
-            ->where('status', '!=', 'deleted');
+            ->where('status', '!=', 'deleted')
+            ->whereNotNull('path')
+            ->where('path', '!=', '')
+            ->where('path', '!=', '0');
 
         if ($userId !== null) {
             $query->where('uploaded_by', $userId);
@@ -92,7 +117,7 @@ class UploadService
         if (!$file) return false;
         if ($userId !== null && (int) $file->uploaded_by !== $userId) return false;
 
-        $this->storage->deleteFile($file->path);
+        $this->storage->deleteFile($file->path, $file->disk ?: null);
         $file->update(['status' => 'deleted']);
 
         if (function_exists('hexaLog')) {
@@ -128,7 +153,7 @@ class UploadService
 
         $count = 0;
         foreach ($files as $file) {
-            $this->storage->deleteFile($file->path);
+            $this->storage->deleteFile($file->path, $file->disk ?: null);
             $file->update(['status' => 'deleted']);
             $count++;
         }
@@ -147,6 +172,9 @@ class UploadService
      */
     public function getTempPath(): string
     {
-        return storage_path('app/' . $this->storage->getTempDir());
+        $disk = $this->storage->getDisk();
+        $prefix = $disk === 'public' ? 'app/public/' : 'app/';
+        return storage_path($prefix . $this->storage->getTempDir());
     }
 }
+
