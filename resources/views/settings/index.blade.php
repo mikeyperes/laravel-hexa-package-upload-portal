@@ -61,12 +61,13 @@
 </div>
 
 @push('scripts')
+@php($uploadPortalAllowedTypes = implode(', ', config('upload-portal.allowed_types', [])))
 <script>
 function uploadPortalSettings() {
     return {
         uploadDir: @json(config('upload-portal.upload_dir', 'uploads')),
         tempDir: @json(config('upload-portal.temp_dir', 'uploads/temp')),
-        allowedTypes: @json(implode(', ', config('upload-portal.allowed_types', []))),
+        allowedTypes: @json($uploadPortalAllowedTypes),
         maxFileSize: @json(config('upload-portal.max_file_size', 10240)),
         maxFiles: @json(config('upload-portal.max_files_per_upload', 20)),
         saving: false, saved: false, error: '',

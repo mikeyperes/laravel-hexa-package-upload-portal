@@ -101,7 +101,23 @@ class UploadService
             $query->where('uploaded_by', $userId);
         }
 
-        return $query->orderBy('created_at')->get();
+        $files = $query->orderBy('created_at')->get();
+
+        return $files->filter(function (UploadedFile $file): bool {
+            $path = trim((string) $file->path);
+            if ($path === '' || $path === '0') {
+                $file->update(['status' => 'deleted']);
+                return false;
+            }
+
+            $disk = $file->disk ?: $this->storage->getDisk();
+            if (!Storage::disk($disk)->exists($path)) {
+                $file->update(['status' => 'deleted']);
+                return false;
+            }
+
+            return true;
+        })->values();
     }
 
     /**
