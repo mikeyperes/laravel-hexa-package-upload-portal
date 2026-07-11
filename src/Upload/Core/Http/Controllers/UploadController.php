@@ -7,6 +7,7 @@ use hexa_package_upload_portal\Upload\Storage\Services\StorageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\View\View;
 
 class UploadController extends Controller
 {
@@ -14,6 +15,12 @@ class UploadController extends Controller
         private UploadService $uploadService,
         private StorageService $storageService
     ) {}
+
+
+    public function raw(): View
+    {
+        return view("upload-portal::raw.index");
+    }
 
     /**
      * Upload one or more files.

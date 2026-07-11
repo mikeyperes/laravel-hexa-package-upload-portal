@@ -15,7 +15,5 @@ Route::middleware(['web', 'auth', 'locked'])->group(function () {
     Route::post('/upload-portal/settings', [SettingsController::class, 'save'])->name('upload-portal.settings.save');
 
     // Raw test page
-    Route::get('/raw-upload-portal', function () {
-        return view('upload-portal::raw.index');
-    })->name('upload-portal.raw');
+    Route::get("/raw-upload-portal", [UploadController::class, "raw"])->name("upload-portal.raw");
 });
