@@ -2,6 +2,7 @@
 
 namespace hexa_package_upload_portal\Providers;
 
+use hexa_core\Support\PackageAssetRegistry;
 use Illuminate\Support\ServiceProvider;
 
 class UploadPortalServiceProvider extends ServiceProvider
@@ -29,6 +30,10 @@ class UploadPortalServiceProvider extends ServiceProvider
 
         $this->loadRoutesFrom(__DIR__ . '/../../routes/upload-portal.php');
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'upload-portal');
+        app(PackageAssetRegistry::class)->register("upload-portal", dirname(__DIR__, 2) . "/resources/js", [
+            "upload-portal.js",
+        ]);
+
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
 
         if (class_exists(\hexa_core\Services\PackageRegistryService::class)) {
