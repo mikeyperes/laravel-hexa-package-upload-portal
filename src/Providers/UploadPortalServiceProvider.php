@@ -3,6 +3,7 @@
 namespace hexa_package_upload_portal\Providers;
 
 use hexa_core\Support\PackageAssetRegistry;
+use hexa_package_upload_portal\Upload\Core\Authorization\UploadContextRegistry;
 use Illuminate\Support\ServiceProvider;
 
 class UploadPortalServiceProvider extends ServiceProvider
@@ -15,6 +16,7 @@ class UploadPortalServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../../config/upload-portal.php', 'upload-portal');
+        $this->app->singleton(UploadContextRegistry::class);
     }
 
     /**
@@ -66,7 +68,7 @@ class UploadPortalServiceProvider extends ServiceProvider
                 app(\hexa_core\Services\DocumentationService::class)->register('upload-portal', 'Upload Portal', 'hexawebsystems/laravel-hexa-package-upload-portal', [
                     ['title' => 'Overview', 'content' => 'Multi-file upload with progress bars, temp storage, gallery viewing, and cleanup API.'],
                     ['title' => 'Component', 'content' => '<code>@include(\'upload-portal::components.upload-portal\', [\'context\' => \'article\', \'contextId\' => $id, \'multi\' => true])</code>'],
-                    ['title' => 'Public API', 'content' => '<code>UploadService::upload()</code>, <code>getFiles()</code>, <code>delete()</code>, <code>cleanup()</code>, <code>getTempPath()</code>'],
+                    ['title' => 'Public API', 'content' => '<code>UploadContextRegistry::register()</code>, <code>UploadService::upload()</code>, <code>uploadBatch()</code>, <code>getFiles()</code>, <code>delete()</code>, <code>cleanupBatch()</code>, <code>cleanup()</code>, <code>getTempPath()</code>'],
                 ]);
             } catch (\Throwable $e) {}
         }
